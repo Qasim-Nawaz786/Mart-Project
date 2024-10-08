@@ -32,6 +32,11 @@ def delete_inventory_item_by_id(inventory_item_id: int, session: Session):
     session.commit()
     return {"message": "Inventory Item Deleted Successfully"}
 
+
+def validate_product_id(Product_id: int, session: Session)->InventoryItem | None:
+    product = session.exec(select(InventoryItem).where(InventoryItem.product_id == Product_id)).one_or_none()
+    return product
+
 # def update_inventory_by_id(inventory_id: int, to_update_inventory_data: inventoryUpdate, session: Session):
 #     update_data = session.exec(select(inventory).where(inventory.id == inventory_id)).one_or_none()
 #     if update_data is None:

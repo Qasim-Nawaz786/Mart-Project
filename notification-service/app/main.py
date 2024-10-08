@@ -23,9 +23,10 @@ def create_db_and_tables()->None:
 @asynccontextmanager
 async def lifespan(app: FastAPI)-> AsyncGenerator[None, None]:
     print("Creating...!")
+    topics = ["user-verfication", "order-add-stock-response", "Transaction_"]
     # print("Creating tables..")
     # task = asyncio.create_task(consume_messages("order-add-stock-response", 'broker:19092'))
-    task1 = asyncio.create_task(consume_user("User-Verfication", 'broker:19092'))
+    asyncio.create_task(consume_user(topics, 'broker:19092'))
     print("Strartup complete")
     create_db_and_tables()
     yield
@@ -40,16 +41,16 @@ app = FastAPI(lifespan=lifespan, title="Hello World API with DB",
 
 @app.get("/")
 def read_root():
-    return {"Hello": "PanaCloud"}
+    return {"Hello": "This is notification-service"}
 
 
 
-@app.get("/manage-user/all", response_model=list[UserLogin])
+@app.get("/manage-user-notification/all", response_model=list[UserLogin])
 def all_orders(session: Annotated[Session, Depends(get_session)]):
     """ Get all inventory items from the database"""
     return get_user(session)
 
-@app.delete("/delete-user/{user_id}")
+@app.delete("/delete-user-notification/{user_id}")
 def delete_user(user_idd:int, session: Annotated[Session,Depends(get_session)]):
     """ Delete user by id from the database"""
     try:

@@ -5,6 +5,8 @@ from fastapi import HTTPException
 from jose import jwt, JWTError
 from app import settings
 from passlib.context import CryptContext
+from aiokafka import AIOKafkaProducer
+import json
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 def add_new_credentials(user_data:User, session: Session):
@@ -47,5 +49,15 @@ def delete_user(user_id:int, session:Session):
 
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
+
+
+async def produce_user_login_message(user):
+    producer = AIOKafkaProducer(bootstrap_servers='localhost:19092')
+    await producer.start()
+    try:
+        message = json.dumps({"username": user.username, "email": user.email})
+        await producer.send_and_wait("user-login-topic", message.encode('utf-8'))
+    finally:
+        await producer.stop()
 
 

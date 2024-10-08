@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.security import OAuth2PasswordBearer
 from app.models.user_model import User
+from app.crud.user_crud import produce_user_login_message
 
 
 def create_db_and_tables()->None:
@@ -45,17 +46,17 @@ async def login_request(data_form_user: OAuth2PasswordRequestForm = Depends(), s
      message = {"message": "Login successful", "User_id": user.id, "email": user.email}
      message_str = json.dumps(message)
      
-     await producer.send_and_wait("User-Verfication", message_str.encode("utf-8"))
+     await producer.send_and_wait("user-verfication", message_str.encode("utf-8"))
      return {"UserName:":user.username, "access_token:":access_token}
 
 
 
 
 @app.post("/register/")
-def register_user(name:str,password: str,useremail: str, session:Session = Depends(get_session)):
+def register_user(name:str,password: str,useremail: str, id:int,  session:Session = Depends(get_session)):
     try:
         hashed_password = hash_password(password)
-        user_data = User(username=name, password=hashed_password,email=useremail, created_at=datetime.now())
+        user_data = User(username=name, password=hashed_password,email=useremail, created_at=datetime.now(), id =id)
         data = add_new_credentials(user_data, session)
         print("Registering form user")
         return data

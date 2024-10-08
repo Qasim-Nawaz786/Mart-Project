@@ -131,41 +131,34 @@ services:
     volumes:
         - postgres_notification_db:/var/lib/postgresql/data
 
-    
-  api:
+  payment-service:
+    image: payment-mart-api
     build:
-      context: ./todo
+      context: ./payment-service
       dockerfile: Dockerfile.dev
     volumes:
-      - ./todo:/code  # Sync local development directory with the container
+    - ./payment-service:/code 
     depends_on:
-        - postgres_db
+        - postgres_payment_db 
         - broker
     ports:
-      - "8000:8000"  # Expose container port 8000 to host port 8000  
-  api2:
-    build:
-      context: ./microservice_02
-      dockerfile: Dockerfile.dev
-    volumes:
-      - ./microservice_02:/code  # Sync local development directory with the container
-    depends_on:
-        - postgres_db
-        - broker
-    ports:
-      - "8002:8000"  # Expose container port 8000 to host port 8000  
-  postgres_db:
+      - "8010:8000"
+
+  postgres_payment_db:
     image: postgres:latest  # Use the official PostgreSQL image
     restart: always
-    container_name: PostgresCont
+    container_name: PostgresPaymentCont
     environment:
         - POSTGRES_USER=ziakhan
         - POSTGRES_PASSWORD=my_password
         - POSTGRES_DB=mydatabase
     ports:
-        - '5433:5432'
+        - '5486:5432'
     volumes:
-        - postgres_db:/var/lib/postgresql/data
+        - postgres_payment_db:/var/lib/postgresql/data
+
+    
+ 
   broker:
     image: apache/kafka:3.7.0
     hostname: broker
@@ -200,8 +193,6 @@ services:
     depends_on:
       - broker
 volumes:
-  postgres_db:
-    driver: local
   postgres_product_db:
     driver: local
   postgres_inventory_db:
@@ -211,6 +202,8 @@ volumes:
   postgres_user_db:
     driver: local
   postgres_notification_db:
+    driver: local
+  postgres_payment_db:
     driver: local
 networks:
   default:

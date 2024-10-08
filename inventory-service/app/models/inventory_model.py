@@ -7,7 +7,6 @@ class InventoryItem(SQLModel, table=True):
     variant_id: int | None = None   
     quantity: int
     status: str 
+    price: int
 
 
-# class InventoryItemUpdate(SQLModel):
-#     pass

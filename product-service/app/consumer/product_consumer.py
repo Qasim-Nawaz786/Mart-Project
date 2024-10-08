@@ -12,6 +12,7 @@ async def consume_messages(topic, bootstrap_servers):
         topic,
         bootstrap_servers=bootstrap_servers,
         group_id="my-group",
+        request_timeout_ms=60000,
         # auto_offset_reset='earliest'
     )
 

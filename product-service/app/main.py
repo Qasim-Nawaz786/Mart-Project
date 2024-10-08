@@ -14,8 +14,8 @@ from app.deps import get_session, get_kafka_producer
 from fastapi import HTTPException
 from app.consumer.product_consumer import consume_messages
 from app.consumer.inventory_consumer import consume_inventory_messages
-from app.consumer.order_consumer import consume_order_messages
 from app import product_pb2
+from app import settings
 
 
 
@@ -28,10 +28,10 @@ def create_db_and_tables()->None:
 async def lifespan(app: FastAPI)-> AsyncGenerator[None, None]:
     print("Creating...!")
     # print("Creating tables..")
-    # # loop.run_until_complete(consume_messages('todos', 'broker:19092'))
-    task = asyncio.create_task(consume_messages("PRODUCT", 'broker:19092'))
-    task1 = asyncio.create_task(consume_inventory_messages("Inventory-Item", 'broker:19092'))
-    task2 = asyncio.create_task(consume_order_messages("Order", 'broker:19092'))
+    # # loop.run_until_complete(consume_messages('todos', 'broker:19092'))  
+    asyncio.create_task(consume_messages("product", settings.BOOTSTRAP_SERVER))
+    asyncio.create_task(consume_inventory_messages("Inventory-Item", settings.BOOTSTRAP_SERVER))
+    
 
     print("Strartup complete")
     create_db_and_tables()
@@ -47,7 +47,7 @@ app = FastAPI(lifespan=lifespan, title="Hello World API with DB",
 
 @app.get("/")
 def read_root():
-    return {"Hello": "PanaCloud"}
+    return {"Hello": "This is Product service"}
 
 
 @app.get("/manage-products-all")
@@ -73,11 +73,20 @@ async def create_new_product(product : Product, session:Annotated[Session, Depen
     # product_dict = {field: getattr(product, field) for field in product.dict()}   #|
     # product_json = json.dumps(product_dict).encode("utf-8")                       #|
     # print("product_JSON:", product_json)        
-    product_protobuf = product_pb2.Product(id=product.id, name=product.name, description = product.description, price = product.price, expirey = product.expirey, brand = product.brand, weight = product.weignt, category = product.category, sku = product.sku)                                  #|   ## These lines send data to the kafka producer
+    product_protobuf = product_pb2.Product(
+        id=product.id, 
+        name=product.name, 
+        description = product.description, 
+        price = product.price, 
+        expirey = product.expirey, 
+        brand = product.brand, 
+        weight = product.weignt, 
+        category = product.category, 
+        sku = product.sku)                                  #|   ## These lines send data to the kafka producer
     serialized_product = product_protobuf.SerializeToString()
     print(f"serialized_product: {serialized_product}")
     # Produce message                                                             #|
-    await producer.send_and_wait("PRODUCT", serialized_product)      #|
+    await producer.send_and_wait("product", serialized_product)      #|
     # new_product = add_new_product(product, session)                           ###  This line push the data directly into the database
     return product
 

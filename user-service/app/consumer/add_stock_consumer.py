@@ -1,7 +1,7 @@
 import json
 from aiokafka import  AIOKafkaConsumer
-from app.crud.inventory_crud import add_new_inventory
-from app.models.inventory_model import InventoryItem
+from app.crud.user_crud import add_new_inventory
+from app.models.user_model import InventoryItem
 from app.deps import get_session
 
 async def consume_messages(topic, bootstrap_servers):
